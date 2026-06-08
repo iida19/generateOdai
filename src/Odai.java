@@ -1,4 +1,5 @@
-import java.util.ArrayList;
+package generateOdai;
+
 import java.util.Random;
 import java.util.Scanner;
 
@@ -11,14 +12,35 @@ public class Odai {
         String[] chosenOdai = new String[4];
 
         while (true) {
+        	
             showMenu();
             int next = scanner.nextInt();
 
             if (next == 1) {
-                chooseOdai(random, chosenOdai);
-                showOdai(scanner, random, chosenOdai);
+            	
+            	while (true) {
+            		
+            		chooseOdai(random, chosenOdai);
+            		showOdai(scanner, random, chosenOdai);
+            		
+            		int action = askNext(scanner);
+            		
+            		if (action == 1) {
+            			continue;
+            		} else if (action == 2) {
+            			System.out.print("\n");
+            			break;
+            		} else if (action == 3) {
+            			System.out.println("\n終了します！");
+            			System.exit(0);
+            		} else {
+                        System.out.println("それはメニュー番号じゃないよ！");
+                    }
+            		
+            	}	
 
             } else if (next == 2) {
+            	System.out.println("\n終了します！");
                 System.exit(0);
 
             } else {
@@ -59,39 +81,22 @@ public class Odai {
 
     public static void showOdai(Scanner scanner, Random random, String[] chosenOdai) {
 
-        System.out.println("");         // 改行
+        System.out.print("\n");         // 改行
         System.out.println("今日は、" + chosenOdai[1] + "色をテーマに、");
         System.out.println(chosenOdai[2] + "・" + chosenOdai[3] + "の構図で、");
         System.out.println(chosenOdai[0] + "を描いてみよう！");
-        System.out.println("");         // 改行
-
-        askNext(scanner, random, chosenOdai);
+        System.out.print("\n");         // 改行
 
     }
 
-    public static void askNext(Scanner scanner, Random random, String[] chosenOdai) {
+    public static int askNext(Scanner scanner) {
 
-        while(true) {
+    	System.out.println("1. お題を再生成");
+        System.out.println("2. メニューへ");
+        System.out.println("3. 終了");
+        System.out.print("次はどうしますか？: ");
 
-            System.out.println("1. お題を再生成");
-            System.out.println("2. メニューへ");
-            System.out.println("3. 終了");
-            System.out.print("次はどうしますか？: ");
-
-            int next = scanner.nextInt();
-            System.out.println("");         // 改行
-
-            if (next == 1) {
-                chooseOdai(random, chosenOdai);
-                showOdai(scanner, random, chosenOdai);
-            } else if (next == 2) {
-                break;
-            } else if (next == 3) {
-                System.exit(0);
-            } else {
-                System.out.println("それはメニュー番号じゃないよ！");
-            }
-        }
-
+        return scanner.nextInt();
+        
     }
 }

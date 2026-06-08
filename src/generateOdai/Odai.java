@@ -20,7 +20,8 @@ public class Odai {
             	
             	while (true) {
             		
-            		chooseOdai(random, chosenOdai);
+            		int dif = difficaltyChoice(scanner);
+            		chooseOdai(dif, random, chosenOdai);
             		showOdai(scanner, random, chosenOdai);
             		
             		int action = askNext(scanner);
@@ -58,8 +59,19 @@ public class Odai {
         System.out.print("メニュー番号を入力してください！ : ");
 
     }
+    
+    public static int difficaltyChoice(Scanner scanner) {
+    	
+    	System.out.println("難易度はどうしますか？");
+    	System.out.println("1. むずかしい");
+    	System.out.println("2. ふつう");
+    	System.out.println("3. かんたん");
+    	
+    	return scanner.nextInt();
+		
+	}
 
-    public static void chooseOdai(Random random, String[] chosenOdai) {
+    public static void chooseOdai(int dif, Random random, String[] chosenOdai) {
         String[] gender = {"男性", "女性"};
         String[] color = {"赤", "橙", "黄", "緑", "水", "青", "紫", "白", "黒"};
         String[] zoom = {"アップ", "ヒキ", "バストアップ"};
@@ -71,11 +83,15 @@ public class Odai {
         int rco = random.nextInt(color.length);
         chosenOdai[1] = color[rco];
 
-        int rzo = random.nextInt(zoom.length);
-        chosenOdai[2] = zoom[rzo];
-
-        int rpa = random.nextInt(angle.length);
-        chosenOdai[3] = angle[rpa];
+        if ( dif == 1 || dif == 2) {
+        	int rzo = random.nextInt(zoom.length);
+        	chosenOdai[2] = zoom[rzo];
+        }	
+        
+        if ( dif == 1 ) {
+        	int rpa = random.nextInt(angle.length);
+        	chosenOdai[3] = angle[rpa];
+        }	
 
     }
 
@@ -99,4 +115,5 @@ public class Odai {
         return scanner.nextInt();
         
     }
+    
 }

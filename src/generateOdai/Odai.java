@@ -10,21 +10,20 @@ public class Odai {
         Scanner scanner = new Scanner(System.in);
         Random random = new Random();
         String[] chosenOdai = new String[4];
+        String[] savedOdai = new String[3];
 
         while (true) {
         	
             showMenu();
-            int next = scanner.nextInt();
+            String next = scanner.nextLine();
 
-            if (next == 1) {
+            if (next.equals("1")) {
             	
             	while (true) {
             		
-            		int dif = difficaltyChoice(scanner);
-            		chooseOdai(dif, random, chosenOdai);
-            		showOdai(scanner, random, chosenOdai);
+            		generateOdai(scanner, random, chosenOdai, savedOdai);
             		
-            		int action = askNext(scanner);
+            		int action = askNext(scanner, savedOdai);
             		
             		if (action == 1) {
             			continue;
@@ -34,13 +33,31 @@ public class Odai {
             		} else if (action == 3) {
             			System.out.println("\n終了します！");
             			System.exit(0);
-            		} else {
-                        System.out.println("それはメニュー番号じゃないよ！");
-                    }
+            		}
+            		
+            	}
+            	
+            } else if (next.equals("2")) {
+            
+            	showHistory(savedOdai);
+            	
+            	while (true) {
+            		
+            		int action = askNext(scanner, savedOdai);
+        		
+            		if (action == 1) {
+            			generateOdai(scanner, random, chosenOdai, savedOdai);
+            		} else if (action == 2) {
+            			System.out.print("\n");
+            			break;
+            		} else if (action == 3) {
+            			System.out.println("\n終了します！");
+            			System.exit(0);
+            		}
             		
             	}	
 
-            } else if (next == 2) {
+            } else if (next.equals("3")) {
             	System.out.println("\n終了します！");
                 System.exit(0);
 
@@ -55,27 +72,52 @@ public class Odai {
 
         System.out.println("今日のお題を作ります！");
         System.out.println("1. お題生成");
-        System.out.println("2. 終了");
+        System.out.println("2. 履歴確認");
+        System.out.println("3. 終了");
         System.out.print("メニュー番号を入力してください！ : ");
 
     }
     
-    public static int difficaltyChoice(Scanner scanner) {
+    public static void generateOdai(Scanner scanner, Random random, String[] chosenOdai, String[] savedOdai) {
     	
-    	System.out.println("難易度はどうしますか？");
-    	System.out.println("1. むずかしい");
-    	System.out.println("2. ふつう");
-    	System.out.println("3. かんたん");
+    	int d = difficultyChoice(scanner);
+		chooseOdai(d, random, chosenOdai);
+		showOdai(d, chosenOdai);
+		saveOdai(chosenOdai, savedOdai);
     	
-    	return scanner.nextInt();
+    }
+    
+    public static int difficultyChoice(Scanner scanner) {
+    	
+    	while ( true ) {
+    		
+    		System.out.println("\n難易度はどうしますか？");
+    		System.out.println("1. むずかしい");
+    		System.out.println("2. ふつう");
+    		System.out.println("3. かんたん");
+    		System.out.print("選んでください！：");
+    	
+    		String dif = scanner.nextLine();
+    		if ( dif.matches("[1-3]") ) {
+    			return Integer.parseInt( dif );
+    		} else {
+    			System.out.println("選択肢の番号を入力してください！");
+    		}
+    		
+    	}	
 		
 	}
 
     public static void chooseOdai(int dif, Random random, String[] chosenOdai) {
+    	
         String[] gender = {"男性", "女性"};
         String[] color = {"赤", "橙", "黄", "緑", "水", "青", "紫", "白", "黒"};
         String[] zoom = {"アップ", "ヒキ", "バストアップ"};
         String[] angle = {"正面", "フカン", "アオリ"};
+        
+        for (int i = 0; i < chosenOdai.length; i++) {
+            chosenOdai[i] = null;
+        }
 
         int rge = random.nextInt(gender.length);
         chosenOdai[0] = gender[rge];
@@ -95,24 +137,99 @@ public class Odai {
 
     }
 
-    public static void showOdai(Scanner scanner, Random random, String[] chosenOdai) {
+    public static void showOdai(int dif, String[] chosenOdai) {
 
         System.out.print("\n");         // 改行
         System.out.println("今日は、" + chosenOdai[1] + "色をテーマに、");
-        System.out.println(chosenOdai[2] + "・" + chosenOdai[3] + "の構図で、");
+        
+        if ( dif == 2 ) {
+        	System.out.println(chosenOdai[2] + "の距離感で、");
+        }
+        
+        if ( dif == 1 ) {
+        	System.out.println(chosenOdai[2] + "・" + chosenOdai[3] + "の構図で、");
+        }
+        
         System.out.println(chosenOdai[0] + "を描いてみよう！");
         System.out.print("\n");         // 改行
 
     }
+    
+    public static String forSaveOdai(String[] chosenOdai) {
+    	
+    	String s = "";
+    	
+    	for (int i = 0; i < chosenOdai.length; i ++ ) {
+			if ( chosenOdai[i] != null ) {
+				s += chosenOdai[i] + "/";
+			} else {
+				break;
+			}
+		}
+		s = s.substring(0, s.length()-1 );
+		return s;
+    	
+    }
+    
+    public static void saveOdai(String[] chosenOdai, String[] savedOdai) {
+    	
+    	String s = forSaveOdai(chosenOdai);
+    	
+    	if ( savedOdai[0] == null ) {
+    		savedOdai[0] = s;
+    		
+    	} else if ( savedOdai[1] == null ) {
+    		savedOdai[1] = s;
+    		
+    	} else if ( savedOdai[2] == null ) {
+    		savedOdai[2] = s;
+    		
+    	} else {
+    		savedOdai[0] = savedOdai[1];
+    		savedOdai[1] = savedOdai[2];
+    		savedOdai[2] = s;
+    	}
+    	
+    }
+    
+    public static void showHistory(String[] savedOdai) {
+    	
+    	System.out.println("\n最新3件の履歴を表示します！");
+    	
+    	for ( int i = 0; i < savedOdai.length; i ++ ) {
+    		if ( savedOdai[i] != null ) {
+    			System.out.println( savedOdai[i] );
+    		} else if ( savedOdai[0] == null ) {
+    			System.out.println("まだないよ");
+    			break;
+    		}
+    	}
+    	
+    	System.out.println("履歴は以上です！\n");
+    	
+    }
 
-    public static int askNext(Scanner scanner) {
+    public static int askNext(Scanner scanner, String[] savedOdai) {
 
-    	System.out.println("1. お題を再生成");
-        System.out.println("2. メニューへ");
-        System.out.println("3. 終了");
-        System.out.print("次はどうしますか？: ");
+    	while ( true ) {
+    	
+    		if (savedOdai[0] == null) {
+    			System.out.println("1. お題を生成");
+    		} else {
+    			System.out.println("1. お題を再生成");
+    		}
+    		System.out.println("2. メニューへ");
+    		System.out.println("3. 終了");
+    		System.out.print("次はどうしますか？: ");
 
-        return scanner.nextInt();
+    		String next = scanner.nextLine();
+    		if (next.matches("[1-3]")) {
+    			return Integer.parseInt(next);
+    		} else {
+    			System.out.println("メニュー番号を入力してください！");
+    		}
+    		
+    	}	
         
     }
     

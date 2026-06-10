@@ -1,15 +1,25 @@
 package generateOdai;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
 public class Odai {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Scanner scanner = new Scanner(System.in);
         Random random = new Random();
-        String[] chosenOdai = new String[4];
+        
+        List<String[]> odaiList = new ArrayList<String[]>();
+        viewOdai(odaiList);
+        
+        String[] chosenOdai = new String[odaiList.size()];
         String[] savedOdai = new String[3];
 
         while (true) {
@@ -21,7 +31,7 @@ public class Odai {
             	
             	while (true) {
             		
-            		generateOdai(scanner, random, chosenOdai, savedOdai);
+            		generateOdai(scanner, random, chosenOdai, savedOdai, odaiList);
             		
             		int action = askNext(scanner, savedOdai);
             		
@@ -46,7 +56,7 @@ public class Odai {
             		int action = askNext(scanner, savedOdai);
         		
             		if (action == 1) {
-            			generateOdai(scanner, random, chosenOdai, savedOdai);
+            			generateOdai(scanner, random, chosenOdai, savedOdai, odaiList);
             		} else if (action == 2) {
             			System.out.print("\n");
             			break;
@@ -64,9 +74,12 @@ public class Odai {
             } else {
                 System.out.println("それはメニュー番号じゃないよ！");
             }
+            
         }
 
     }
+    
+    
 
     public static void showMenu() {
 
@@ -78,10 +91,10 @@ public class Odai {
 
     }
     
-    public static void generateOdai(Scanner scanner, Random random, String[] chosenOdai, String[] savedOdai) {
+    public static void generateOdai(Scanner scanner, Random random, String[] chosenOdai, String[] savedOdai, List<String[]> odaiList) {
     	
     	int d = difficultyChoice(scanner);
-		chooseOdai(d, random, chosenOdai);
+		chooseOdai(d, random, chosenOdai, odaiList);
 		showOdai(d, chosenOdai);
 		saveOdai(chosenOdai, savedOdai);
     	
@@ -107,15 +120,40 @@ public class Odai {
     	}	
 		
 	}
-
-    public static void chooseOdai(int dif, Random random, String[] chosenOdai) {
+    
+    public static void viewOdai(List<String[]> odaiList) throws IOException {
     	
-        String[] gender = {"男性", "女性"};
-        String[] color = {"赤", "橙", "黄", "緑", "水", "青", "紫", "白", "黒"};
-        String[] zoom = {"アップ", "ヒキ", "バストアップ"};
-        String[] angle = {"正面", "フカン", "アオリ"};
+    	String fileName = "./data/odai.csv";
+        File odaiFile = new File(fileName);
         
-        for (int i = 0; i < chosenOdai.length; i++) {
+        if (odaiFile.exists()) {
+        	
+        	BufferedReader br = new BufferedReader(new FileReader(odaiFile));
+        	
+        	String odai;
+        	while ((odai = br.readLine()) != null) {
+        		
+        		if (odai.contains(",")) {
+        			String[] odais = odai.split(",");
+        			odaiList.add(odais);
+        		}	
+        		
+        	}
+        	
+        	br.close();
+        	
+        }
+    	
+    }
+
+    public static void chooseOdai(int dif, Random random, String[] chosenOdai, List<String[]> odaiList) {
+    	
+        String[] gender = odaiList.get(0);
+        String[] color = odaiList.get(1);
+        String[] zoom = odaiList.get(2);
+        String[] angle = odaiList.get(3);
+        
+        for (int i = 0; i < odaiList.size(); i++) {
             chosenOdai[i] = null;
         }
 
@@ -155,7 +193,7 @@ public class Odai {
 
     }
     
-    public static String forSaveOdai(String[] chosenOdai) {
+    public static String makeOdaiText(String[] chosenOdai) {
     	
     	String s = "";
     	
@@ -173,21 +211,25 @@ public class Odai {
     
     public static void saveOdai(String[] chosenOdai, String[] savedOdai) {
     	
-    	String s = forSaveOdai(chosenOdai);
+    	String s = makeOdaiText(chosenOdai);
+    	int count = 0;
     	
-    	if ( savedOdai[0] == null ) {
-    		savedOdai[0] = s;
+    	for (int i = 0; i < savedOdai.length; i ++ ) {
     		
-    	} else if ( savedOdai[1] == null ) {
-    		savedOdai[1] = s;
+    		if ( savedOdai[i] == null ) {
+    			savedOdai[i] = s;
+    			break;
+    		} else if ( savedOdai[i] != null ) {
+    			count ++;
+    		}
     		
-    	} else if ( savedOdai[2] == null ) {
-    		savedOdai[2] = s;
-    		
-    	} else {
+    	}	
+    			
+    	if ( count == savedOdai.length ) {
     		savedOdai[0] = savedOdai[1];
     		savedOdai[1] = savedOdai[2];
     		savedOdai[2] = s;
+    		
     	}
     	
     }

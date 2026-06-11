@@ -3,7 +3,9 @@ package generateOdai;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,7 +13,7 @@ import java.util.Scanner;
 
 public class Odai {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
         Random random = new Random();
@@ -21,6 +23,8 @@ public class Odai {
         
         String[] chosenOdai = new String[odaiList.size()];
         String[] savedOdai = new String[3];
+        
+        readHistory( savedOdai );
 
         while (true) {
         	
@@ -41,6 +45,7 @@ public class Odai {
             			System.out.print("\n");
             			break;
             		} else if (action == 3) {
+            			keepHistory( savedOdai );
             			System.out.println("\n終了します！");
             			System.exit(0);
             		}
@@ -61,6 +66,7 @@ public class Odai {
             			System.out.print("\n");
             			break;
             		} else if (action == 3) {
+            			keepHistory( savedOdai );
             			System.out.println("\n終了します！");
             			System.exit(0);
             		}
@@ -68,6 +74,7 @@ public class Odai {
             	}	
 
             } else if (next.equals("3")) {
+            	keepHistory( savedOdai );
             	System.out.println("\n終了します！");
                 System.exit(0);
 
@@ -80,6 +87,46 @@ public class Odai {
     }
     
     
+    
+    public static void readHistory( String[] savedOdai ) {
+    	
+    	String fileName = "./data/history.csv";
+    	File fn = new File( fileName );
+    	BufferedReader br = null;
+    	
+    	if ( fn.exists() ) {
+    		
+    		try {
+    			
+    			br = new BufferedReader( new FileReader( fn ) );
+    			
+    			String history;
+    			int i = 0;
+    			while ( ( history = br.readLine() ) != null && i < savedOdai.length ) {
+    				savedOdai[i] = history;
+    				i ++;
+    			}
+    			
+    		} catch ( IOException e ) {
+    			e.printStackTrace();
+    			
+    		} finally {
+    			
+    			if ( br != null ) {
+    				
+    				try {
+    					br.close();
+    				} catch ( IOException e ) {
+    					e.printStackTrace();
+    				}
+    				
+    			}
+    			
+    		}
+    		
+    	}
+    	
+    }
 
     public static void showMenu() {
 
@@ -105,13 +152,14 @@ public class Odai {
     	while ( true ) {
     		
     		System.out.println("\n難易度はどうしますか？");
-    		System.out.println("1. むずかしい");
+    		System.out.println("1. かんたん");
     		System.out.println("2. ふつう");
-    		System.out.println("3. かんたん");
+    		System.out.println("3. むずかしい");
+    		System.out.println("4. とてもむずかしい");
     		System.out.print("選んでください！：");
     	
     		String dif = scanner.nextLine();
-    		if ( dif.matches("[1-3]") ) {
+    		if ( dif.matches("[1-4]") ) {
     			return Integer.parseInt( dif );
     		} else {
     			System.out.println("選択肢の番号を入力してください！");
@@ -121,57 +169,74 @@ public class Odai {
 		
 	}
     
-    public static void viewOdai(List<String[]> odaiList) throws IOException {
+    public static void viewOdai(List<String[]> odaiList) {
     	
     	String fileName = "./data/odai.csv";
         File odaiFile = new File(fileName);
+        BufferedReader br = null;
         
         if (odaiFile.exists()) {
         	
-        	BufferedReader br = new BufferedReader(new FileReader(odaiFile));
-        	
-        	String odai;
-        	while ((odai = br.readLine()) != null) {
+        	try {
         		
-        		if (odai.contains(",")) {
-        			String[] odais = odai.split(",");
-        			odaiList.add(odais);
-        		}	
-        		
-        	}
+        		br = new BufferedReader(new FileReader(odaiFile));
         	
-        	br.close();
+        		String odai;
+        		while ((odai = br.readLine()) != null) {
+        		
+        			if (odai.contains(",")) {
+        				String[] odais = odai.split(",");
+        				odaiList.add(odais);
+        			}	
+        		
+        		}
+        		
+        	} catch ( IOException e ) {
+        		
+        		e.printStackTrace();
+        		
+        	} finally {
+        		
+        		if ( br != null ) {
+        			
+        			try {
+        				br.close();
+        			} catch ( IOException e ) {
+        				e.printStackTrace();
+        			}
+        			
+        		}
+        		
+        	}	
         	
         }
     	
     }
 
     public static void chooseOdai(int dif, Random random, String[] chosenOdai, List<String[]> odaiList) {
-    	
-        String[] gender = odaiList.get(0);
-        String[] color = odaiList.get(1);
-        String[] zoom = odaiList.get(2);
-        String[] angle = odaiList.get(3);
         
-        for (int i = 0; i < odaiList.size(); i++) {
-            chosenOdai[i] = null;
+        for ( int i = 0; i < odaiList.size(); i ++ ) {
+        	chosenOdai[i] = null;
+        }
+        
+        int level = 0;
+        for ( int i = 0; i < odaiList.size(); i ++ ) {
+        	
+        	int r = random.nextInt( ( odaiList.get( i ) ).length );
+        	chosenOdai[i] = ( odaiList.get( i ) )[ r ];
+        	level ++;
+        	
+        	if ( dif == 1 && level >= 2 ) {
+        		break;
+        	} else if ( dif == 2 && level >= 4 ) {
+        		break;
+        	} else if ( dif == 3 && level >= 5 ) {
+        		break;
+        	}
+        	
         }
 
-        int rge = random.nextInt(gender.length);
-        chosenOdai[0] = gender[rge];
-
-        int rco = random.nextInt(color.length);
-        chosenOdai[1] = color[rco];
-
-        if ( dif == 1 || dif == 2) {
-        	int rzo = random.nextInt(zoom.length);
-        	chosenOdai[2] = zoom[rzo];
-        }	
         
-        if ( dif == 1 ) {
-        	int rpa = random.nextInt(angle.length);
-        	chosenOdai[3] = angle[rpa];
-        }	
 
     }
 
@@ -181,14 +246,27 @@ public class Odai {
         System.out.println("今日は、" + chosenOdai[1] + "色をテーマに、");
         
         if ( dif == 2 ) {
-        	System.out.println(chosenOdai[2] + "の距離感で、");
+        	System.out.println(chosenOdai[2] + "の距離感で、" + chosenOdai[3] + "表情の" );
         }
         
-        if ( dif == 1 ) {
-        	System.out.println(chosenOdai[2] + "・" + chosenOdai[3] + "の構図で、");
+        if ( dif == 3 || dif == 4 ) {
+        	System.out.println(chosenOdai[2] + "・" + chosenOdai[4] + "の構図で、" + chosenOdai[3] + "表情の" );
         }
         
         System.out.println(chosenOdai[0] + "を描いてみよう！");
+        
+        if ( dif == 4 ) {
+        	
+        	System.out.print("エクストラお題：");
+        	String extra = "";
+        	for ( int i = 5; i < chosenOdai.length; i ++ ) {
+        		extra += chosenOdai[i] + "/";
+        	}
+        	extra = extra.substring(0, extra.length()-1 );
+        	System.out.println(extra);
+        	
+        }	
+        
         System.out.print("\n");         // 改行
 
     }
@@ -229,6 +307,41 @@ public class Odai {
     		savedOdai[0] = savedOdai[1];
     		savedOdai[1] = savedOdai[2];
     		savedOdai[2] = s;
+    		
+    	}
+    	
+    }
+    
+    public static void keepHistory( String[] savedOdai ) {
+    	
+    	PrintWriter pw = null;
+    	String fileName = "./data/history.csv";
+    	
+    	try {
+    		
+    		pw = new PrintWriter( new FileWriter( fileName ) );
+    		
+    		if ( savedOdai[0] != null ) {
+    			
+    			for ( String s : savedOdai ) {
+    				
+    				if ( s != null ) {
+    					pw.println( s );
+    				}
+    				
+    			}
+    			
+    		}	
+    		
+    	} catch ( IOException e ) {
+    		
+    		e.printStackTrace();
+    		
+    	} finally {
+    		
+    		if ( pw != null ) {
+    			pw.close();
+    		}
     		
     	}
     	

@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
@@ -22,9 +23,15 @@ public class Odai {
         viewOdai(odaiList);
         
         String[] chosenOdai = new String[odaiList.size()];
-        String[] savedOdai = new String[3];
         
-        readHistory( savedOdai );
+        int savingSize = 3;
+        int favoriteSize = 10;
+        String savingPlace = "./data/history.csv";
+        String favoritePlace = "./data/favorite.csv";
+        List<String> savedOdai = readDocument( savingPlace, savingSize );
+        List<String> favoriteOdai = readDocument( favoritePlace, favoriteSize );
+        
+        int count = 0;
 
         while (true) {
         	
@@ -35,9 +42,15 @@ public class Odai {
             	
             	while (true) {
             		
-            		generateOdai(scanner, random, chosenOdai, savedOdai, odaiList);
+            		generateOdai(scanner, random, chosenOdai, savedOdai, odaiList, savingSize);
+            		count ++;
             		
-            		int action = askNext(scanner, savedOdai);
+            		String f = askFavorite(scanner);
+            		if (f.equals("y")) {
+            			favoriteOdai(scanner, chosenOdai, favoriteOdai, favoriteSize);
+            		}
+            		
+            		int action = askNext(scanner, count);
             		
             		if (action == 1) {
             			continue;
@@ -45,41 +58,72 @@ public class Odai {
             			System.out.print("\n");
             			break;
             		} else if (action == 3) {
-            			keepHistory( savedOdai );
-            			System.out.println("\n終了します！");
-            			System.exit(0);
+            			exitOdai(savingPlace, favoritePlace, savedOdai, favoriteOdai);
             		}
             		
             	}
             	
             } else if (next.equals("2")) {
-            
-            	showHistory(savedOdai);
+            	
+            	System.out.println("\n最新3件の履歴を表示します！");
+            	showDocument(savedOdai);
+            	System.out.println("履歴は以上です！\n");
             	
             	while (true) {
             		
-            		int action = askNext(scanner, savedOdai);
+            		int action = askNext(scanner, count);
         		
             		if (action == 1) {
-            			generateOdai(scanner, random, chosenOdai, savedOdai, odaiList);
+            			generateOdai(scanner, random, chosenOdai, savedOdai, odaiList, savingSize);
+            			count ++;
+            			
+            			String f = askFavorite(scanner);
+                		if (f.equals("y")) {
+                			favoriteOdai(scanner, chosenOdai, favoriteOdai, favoriteSize);
+                		}
+                		
             		} else if (action == 2) {
             			System.out.print("\n");
             			break;
+            			
             		} else if (action == 3) {
-            			keepHistory( savedOdai );
-            			System.out.println("\n終了します！");
-            			System.exit(0);
+            			exitOdai(savingPlace, favoritePlace, savedOdai, favoriteOdai);
             		}
             		
-            	}	
-
+            	}
+            	
             } else if (next.equals("3")) {
-            	keepHistory( savedOdai );
-            	System.out.println("\n終了します！");
-                System.exit(0);
+            	System.out.println("\nお気に入り登録したお題一覧を表示します！");
+            	showDocument(favoriteOdai);
+            	System.out.println("お気に入りは以上です！\n");
+            	
+            	while (true) {
+            		
+            		int action = askNext(scanner, count);
+        		
+            		if (action == 1) {
+            			generateOdai(scanner, random, chosenOdai, savedOdai, odaiList, savingSize);
+            			
+            			String f = askFavorite(scanner);
+                		if (f.equals("y")) {
+                			favoriteOdai(scanner, chosenOdai, favoriteOdai, favoriteSize);
+                		}
+                		
+            		} else if (action == 2) {
+            			System.out.print("\n");
+            			break;
+            			
+            		} else if (action == 3) {
+            			exitOdai(savingPlace, favoritePlace, savedOdai, favoriteOdai);
+            		}
+            		
+            	}
+
+            } else if (next.equals("4")) {
+            	exitOdai(savingPlace, favoritePlace, savedOdai, favoriteOdai);
 
             } else {
-                System.out.println("それはメニュー番号じゃないよ！");
+                System.out.println("番号で入力してください！\n");
             }
             
         }
@@ -88,10 +132,10 @@ public class Odai {
     
     
     
-    public static void readHistory( String[] savedOdai ) {
+    public static List<String> readDocument( String fileName, int size ) {
     	
-    	String fileName = "./data/history.csv";
     	File fn = new File( fileName );
+    	List<String> lists = new LinkedList<String>();
     	BufferedReader br = null;
     	
     	if ( fn.exists() ) {
@@ -100,10 +144,10 @@ public class Odai {
     			
     			br = new BufferedReader( new FileReader( fn ) );
     			
-    			String history;
+    			String line;
     			int i = 0;
-    			while ( ( history = br.readLine() ) != null && i < savedOdai.length ) {
-    				savedOdai[i] = history;
+    			while ( ( line = br.readLine() ) != null && i < size ) {
+    				lists.add(line);
     				i ++;
     			}
     			
@@ -126,6 +170,8 @@ public class Odai {
     		
     	}
     	
+    	return lists;
+    	
     }
 
     public static void showMenu() {
@@ -133,17 +179,18 @@ public class Odai {
         System.out.println("今日のお題を作ります！");
         System.out.println("1. お題生成");
         System.out.println("2. 履歴確認");
-        System.out.println("3. 終了");
+        System.out.println("3. お気に入り確認");
+        System.out.println("4. 終了");
         System.out.print("メニュー番号を入力してください！ : ");
 
     }
     
-    public static void generateOdai(Scanner scanner, Random random, String[] chosenOdai, String[] savedOdai, List<String[]> odaiList) {
+    public static void generateOdai(Scanner scanner, Random random, String[] chosenOdai, List<String> savedOdai, List<String[]> odaiList, int size) {
     	
     	int d = difficultyChoice(scanner);
 		chooseOdai(d, random, chosenOdai, odaiList);
 		showOdai(d, chosenOdai);
-		saveOdai(chosenOdai, savedOdai);
+		saveOdai(chosenOdai, savedOdai, size);
     	
     }
     
@@ -236,8 +283,6 @@ public class Odai {
         	
         }
 
-        
-
     }
 
     public static void showOdai(int dif, String[] chosenOdai) {
@@ -287,43 +332,97 @@ public class Odai {
     	
     }
     
-    public static void saveOdai(String[] chosenOdai, String[] savedOdai) {
+    public static void saveOdai(String[] chosenOdai, List<String> documents, int size) {
     	
     	String s = makeOdaiText(chosenOdai);
-    	int count = 0;
     	
-    	for (int i = 0; i < savedOdai.length; i ++ ) {
+    	if (documents.size() < size) {
+    		documents.add(s);
+    	} else if (documents.size() >= size) {
+    		documents.remove(0);
+    		documents.add(s);
+    	}
+    	
+    }
+    
+    public static String askFavorite(Scanner scanner) {
+    	
+    	while (true) {
     		
-    		if ( savedOdai[i] == null ) {
-    			savedOdai[i] = s;
-    			break;
-    		} else if ( savedOdai[i] != null ) {
-    			count ++;
+    		System.out.print("このお題をお気に入りに登録しますか？(y/n)：");
+    		String ans = scanner.nextLine();
+    		System.out.print("\n");
+    	
+    		if (ans.equals("y") || ans.equals("n")) {
+    			return ans;
+    		} else {
+    			System.out.println("yかnで入力してください！");
     		}
     		
     	}	
+    	
+    }
+    
+    public static void favoriteOdai(Scanner scanner, String[] chosenOdai, List<String> documents, int size) {
+    	
+    	String s = makeOdaiText(chosenOdai);
+    	
+    	if (documents.size() < size) {
+    		documents.add(s);
+    		System.out.println("お気に入りに登録しました！");
+    		
+    	} else if (documents.size() >= size) {
+    		
+    		System.out.println("お気に入りの枠がいっぱいです！消す項目の番号を入力してください！");
+    		for (int i = 0; i < documents.size(); i ++) {
+    			System.out.println( ( i + 1 ) + ". " + documents.get(i) );
+    		}
+    		
+    		String doc = "";
+    		int d;
+    		
+    		while (true) {
+    		
+    			System.out.print("消す項目の番号(今出たお題のお気に入り登録をキャンセルするなら0)：");
+    			doc = scanner.nextLine();
     			
-    	if ( count == savedOdai.length ) {
-    		savedOdai[0] = savedOdai[1];
-    		savedOdai[1] = savedOdai[2];
-    		savedOdai[2] = s;
+    			if ( doc.matches("\\d+")) {
+    				d = Integer.parseInt(doc) - 1;
+    				
+    				if ( d >= 0 && d < documents.size() ) {
+        				documents.remove( d );
+        				documents.add(s);
+        				System.out.println(doc + "番を消去して、このお題をお気に入りに登録しました！\n");
+        				break;
+        			
+        			} else if ( d == ( -1 ) ) {
+        				System.out.println("登録をキャンセルしました！\n");
+        				break;
+        			} else {
+        				System.out.println("一覧の番号の中から選んでください！\n");
+        			}
+    				
+    			} else {
+    				System.out.println("番号の数字を入力してください！\n");
+    			}
+    			
+    		}	
     		
     	}
     	
     }
     
-    public static void keepHistory( String[] savedOdai ) {
+    public static void keepDocument( List<String> documents, String fileName ) {
     	
     	PrintWriter pw = null;
-    	String fileName = "./data/history.csv";
     	
     	try {
     		
     		pw = new PrintWriter( new FileWriter( fileName ) );
     		
-    		if ( savedOdai[0] != null ) {
+    		if ( documents.get(0) != null ) {
     			
-    			for ( String s : savedOdai ) {
+    			for ( String s : documents ) {
     				
     				if ( s != null ) {
     					pw.println( s );
@@ -347,28 +446,23 @@ public class Odai {
     	
     }
     
-    public static void showHistory(String[] savedOdai) {
+    public static void showDocument(List<String> documents) {
     	
-    	System.out.println("\n最新3件の履歴を表示します！");
-    	
-    	for ( int i = 0; i < savedOdai.length; i ++ ) {
-    		if ( savedOdai[i] != null ) {
-    			System.out.println( savedOdai[i] );
-    		} else if ( savedOdai[0] == null ) {
+    	if ( documents.get(0) == null ) {
     			System.out.println("まだないよ");
-    			break;
+    	} else {
+    		for ( String s : documents ) {
+    			System.out.println(s);
     		}
     	}
     	
-    	System.out.println("履歴は以上です！\n");
-    	
     }
 
-    public static int askNext(Scanner scanner, String[] savedOdai) {
+    public static int askNext(Scanner scanner, int count) {
 
     	while ( true ) {
     	
-    		if (savedOdai[0] == null) {
+    		if (count == 0) {
     			System.out.println("1. お題を生成");
     		} else {
     			System.out.println("1. お題を再生成");
@@ -386,6 +480,15 @@ public class Odai {
     		
     	}	
         
+    }
+    
+    public static void exitOdai( String savingPlace, String favoritePlace, List<String> savedOdai, List<String> favoriteOdai ) {
+    	
+    	keepDocument( savedOdai, savingPlace );
+		keepDocument( favoriteOdai, favoritePlace );
+		System.out.println("\n終了します！");
+		System.exit(0);
+    	
     }
     
 }
